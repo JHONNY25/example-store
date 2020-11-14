@@ -18,6 +18,7 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    @stack('styles')
 </head>
 <body>
     <div id="app">
@@ -60,6 +61,9 @@
                                                      document.getElementById('logout-form').submit();">
                                         {{ __('Logout') }}
                                     </a>
+                                    <a class="dropdown-item" href="{{ route('setup-card') }}">
+                                        {{ __('Agregar tarjeta') }}
+                                    </a>
 
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
@@ -76,5 +80,8 @@
             @yield('content')
         </main>
     </div>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    @stack('scripts')
 </body>
 </html>
