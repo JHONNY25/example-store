@@ -1,5 +1,6 @@
 <?php
 
+use App\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,3 +21,12 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+Route::get('/get-products', 'ProductController@getProducts')->name('getProducts');
+Route::get('/setup-card', function(){
+    $user = User::find(auth()->user()->id);
+
+    return view('update-payment-method', [
+        'intent' => $user->createSetupIntent()
+    ]);
+})->name('setup-card');
+
