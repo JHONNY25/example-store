@@ -214,9 +214,11 @@
         <h2 class="mb-5 text-center">Agregar Metodos de Pago</h2>
         <div class="row justify-content-center">
             <div class="col-md-6">
+                    <div id="success">
+                    </div>
                 <div class="form-group">
-                    <label for="name">Nombre de propietario</label>
-                    <input type="text" class="form-control" id="name" placeholder="Ingrese el nombre de propietario">
+                    <label for="card-holder-name">Nombre de propietario</label>
+                    <input type="text" class="form-control" id="card-holder-name" placeholder="Ingrese el nombre de propietario">
                 </div>
                 <div id="card-element"></div>
 
@@ -227,10 +229,14 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
+@section('scripts')
     <script>
+        const cardHolderName = document.getElementById('card-holder-name');
+        const cardButton = document.getElementById('card-button');
+        const divSuccess = document.getElementById('success');
+        const clientSecret = cardButton.dataset.secret;
         const stripe = Stripe('pk_test_51HnEIPIlikZUs9gsI5i69fZnlJJI7L1F1eSyUbqqAi4T9sOMGM2BV3pIcdRypYVqsyEIJ5XFrzxEoBCHGSOo3PVV00kzC7TYYj');
+
         var elements = stripe.elements({
             fonts: [
             {
@@ -262,13 +268,41 @@
                 },
             },
             invalid: {
-                iconColor: '#F60000',
-                color: '#F60000',
+                iconColor: '#fa755a',
+                color: '#fa755a',
             },
             },
         });
         card.mount('#card-element');
 
-        registerElements([card], 'card-element');
+        cardButton.addEventListener("click", function(){
+            console.log('click');
+
+            createPaymentMethod();
+        },false);
+
+        async function createPaymentMethod(){
+            const { setupIntent, error } = await stripe.confirmCardSetup(
+                clientSecret, {
+                    payment_method: {
+                        card: card,
+                        billing_details: { name: cardHolderName.value }
+                    }
+                }
+            );
+
+            if (error) {
+                // Display "error.message" to the user...
+                console.log(error);
+            } else {
+                // The card has been verified successfully...
+                axios.post('/save-card',{
+                    card: setupIntent["payment_method"],
+                    _token: "{{ csrf_token() }}"
+                }).then(response => {
+                    divSuccess.innerHTML = '<div class="alert alert-success">Metodo de pago agregado!</div>';
+                });
+            }
+        }
     </script>
-@endpush
+@endsection
