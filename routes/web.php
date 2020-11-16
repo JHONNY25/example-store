@@ -1,6 +1,7 @@
 <?php
 
 use App\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,4 +30,24 @@ Route::get('/setup-card', function(){
         'intent' => $user->createSetupIntent()
     ]);
 })->name('setup-card');
+
+Route::post('/save-card', function(Request $request){
+    $user = User::find(auth()->user()->id);
+    $user->updateDefaultPaymentMethod($request->get('card'));
+})->name('save-card');
+
+Route::post('/pay', function(Request $request){
+    $user = User::find(auth()->user()->id);
+
+    $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+    $sku = $stripe->skus->retrieve($request->sku);
+
+    /* $user->invoiceFor('Stickers', 500, [
+        'quantity' => 1,
+    ], [
+        'default_tax_rates' => 15,
+    ]); */
+})->name('pay');
+
+
 
